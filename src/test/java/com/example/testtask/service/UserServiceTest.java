@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -31,41 +32,8 @@ public class UserServiceTest {
     @Mock
     private UserConverter userConverter;
 
-    private com.example.testtask.service.UserService userService;
-
-    @BeforeEach
-    void setUp() {
-        com.example.testtask.service.AgeValidator ageValidator = new com.example.testtask.service.AgeValidator();
-        ReflectionTestUtils.setField(ageValidator, "age", 18);
-        userService = new com.example.testtask.service.UserService(userRepository, userConverter, ageValidator);
-    }
-
-    @Test
-    void whenCreateUserWithNotValidBirthDate_ThenThrowsException() {
-        //GIVEN
-        UserDto userDto = createUserDto();
-        userDto.setBirthDate(LocalDate.now());
-
-        //WHEN
-        Executable executable = () -> userService.createUser(userDto);
-
-        //THEN
-        assertThrows(AgeNotValidException.class, executable);
-    }
-
-    @Test
-    void whenUpdateUserWithNotValidBirthDate_ThenThrowsException() {
-        //GIVEN
-        UserDto userDto = createUserDto();
-        userDto.setBirthDate(LocalDate.now());
-        when(userRepository.findById(userDto.getId())).thenReturn(Optional.of(new User()));
-
-        //WHEN
-        Executable executable = () -> userService.updateUser(userDto);
-
-        //THEN
-        assertThrows(AgeNotValidException.class, executable);
-    }
+    @InjectMocks
+    private UserService userService;
 
     @Test
     void whenUpdateUserAddress_ThenReturnedEqualUserDto() {
@@ -120,7 +88,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void whenCreateUserWithValidBirthDate_ThenSaveUser() {
+    void whenCreateUser_ThenSaveUser() {
         //GIVEN
         UserDto userDto = createUserDto();
 
@@ -133,10 +101,11 @@ public class UserServiceTest {
     }
 
     @Test
-    void whenUpdateUserWithValidBirthDate_ThenUpdateUser() {
+    void whenUpdateExistingUser_ThenUpdateUser() {
         //GIVEN
         UserDto userDto = createUserDto();
-        when(userRepository.findById(userDto.getId())).thenAnswer(inv -> {
+        long id = 1L;
+        when(userRepository.findById(id)).thenAnswer(inv -> {
             User user = new User();
             user.setId(inv.getArgument(0));
             return Optional.of(user);
@@ -144,7 +113,7 @@ public class UserServiceTest {
         when(userConverter.toEntity(userDto)).thenReturn(new User());
 
         //WHEN
-        userService.updateUser(userDto);
+        userService.updateUser(id, userDto);
 
         //THEN
         verify(userRepository, times(1)).save(any());

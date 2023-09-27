@@ -17,19 +17,15 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final UserConverter userConverter;
-    private final com.example.testtask.service.AgeValidator ageValidator;
 
 
     public UserService(UserRepository userRepository,
-                       UserConverter userConverter,
-                       com.example.testtask.service.AgeValidator ageValidator) {
+                       UserConverter userConverter) {
         this.userRepository = userRepository;
         this.userConverter = userConverter;
-        this.ageValidator = ageValidator;
     }
 
     public UserDto createUser(UserDto userDto) {
-        validateAge(userDto);
         User user = userConverter.toEntity(userDto);
         user = userRepository.save(user);
 
@@ -37,9 +33,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto updateUser(UserDto userDto) {
-        User user = getUser(userDto.getId());
-        validateAge(userDto);
+    public UserDto updateUser(Long id, UserDto userDto) {
+        User user = getUser(id);
         User updatedUser = userConverter.toEntity(userDto);
         updatedUser.setId(user.getId());
         userRepository.save(updatedUser);
@@ -70,19 +65,15 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
+        if(!userRepository.existsById(id)){
+            throw new EntityNotFoundException("User with id %s not found".formatted(id));
+        }
         userRepository.deleteById(id);
     }
 
     private User getUser(Long id) {
         return userRepository.findById(id).orElseThrow(() ->
                 new EntityNotFoundException("User with id %s not found".formatted(id)));
-    }
-
-    private void validateAge(UserDto userDto) {
-        boolean isValidAge = ageValidator.validateAgeByBirthDate(userDto.getBirthDate());
-        if (!isValidAge) {
-            throw new AgeNotValidException("Age must be not less than " + ageValidator.getAge());
-        }
     }
 
     private void validateDateRange(LocalDate from, LocalDate to) {
