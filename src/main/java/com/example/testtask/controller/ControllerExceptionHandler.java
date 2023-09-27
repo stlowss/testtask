@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-@ControllerAdvice(basePackages = {"com.example.clearsolutionstesttask.controller"})
+@ControllerAdvice(basePackages = {"com.example.testtask.controller"})
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     private final Logger logger = LoggerFactory.getLogger(ControllerExceptionHandler.class);
 
