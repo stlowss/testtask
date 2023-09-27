@@ -4,8 +4,11 @@ import com.example.testtask.dto.UserDto;
 import com.example.testtask.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,23 +22,30 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto createUser(@RequestBody @Valid UserDto userDto) {
-        return userService.createUser(userDto);
+    public ResponseEntity<Void> createUser(@RequestBody @Valid UserDto userDto) {
+        UserDto createdUser = userService.createUser(userDto);
+
+        ServletUriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentRequest();
+        URI location = builder.path("/{id}").buildAndExpand(createdUser.getId()).toUri();
+        return ResponseEntity.created(location).build();
     }
 
-    @PutMapping
-    public UserDto updateUser(@RequestBody @Valid UserDto userDto) {
-        return userService.updateUser(userDto);
+    @PutMapping("{id}")
+    public UserDto updateUser(@PathVariable("id") Long id, @RequestBody @Valid UserDto userDto) {
+        return userService.updateUser(id, userDto);
     }
 
     @PatchMapping("{id}/address")
-    public UserDto updateUserAddress(@PathVariable("id") Long id, @RequestBody UserDto userDto) {
-        return userService.updateUserAddress(id, userDto);
+    public ResponseEntity<Void> updateUserAddress(@PathVariable("id") Long id, @RequestBody UserDto userDto) {
+        userService.updateUserAddress(id, userDto);
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("{id}/phone-number")
-    public UserDto updateUserPhoneNumber(@PathVariable("id") Long id, @RequestBody UserDto userDto) {
-        return userService.updateUserPhoneNumber(id, userDto);
+    public ResponseEntity<Void> updateUserPhoneNumber(@PathVariable("id") Long id, @RequestBody UserDto userDto) {
+        userService.updateUserPhoneNumber(id, userDto);
+        return ResponseEntity.ok().build();
+
     }
 
     @GetMapping("/search")
@@ -46,7 +56,8 @@ public class UserController {
     }
 
     @DeleteMapping("{id}")
-    public void deleteUser(@PathVariable("id") Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) {
         userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }
