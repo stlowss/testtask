@@ -1,8 +1,8 @@
 package com.example.testtask.dto;
 
+import com.example.testtask.constraint.ValidAge;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -19,8 +19,8 @@ public class UserDto {
     @NotEmpty(message = "Last name must not be empty")
     private String lastName;
 
-    @NotNull(message = "Birth date must not be null")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @ValidAge
     private LocalDate birthDate;
 
     private String address;
